@@ -10,17 +10,13 @@ from matplotlib import pyplot as plt
 # ~~~~~~~~~~~~~~~~~~~~   functions  ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def getclosest(arr,pt):
-    idx = np.argmin(np.abs(arr-pt)) #searches array substracts
-    # coord = np.min(np.abs(arr-pt))
+    idx = np.argmin(np.abs(arr-pt)) #indexs location
     return idx
-    # return coord
 
 
 
 def pixel_plot():
     pass
-
-
 
 
 
@@ -32,7 +28,7 @@ dates = [] #allocate dates list
 
 # for files in os.walk(path): #go through every directory in path
 for root, dirs, files in os.walk(path): #go through every directory in path
-    for f in files:
+    for f in sorted(files):
         if f.split(".")[-1]=="tif": #only grabs .tifs (excludes my readme file)
             dt_str = "".join([c for c in f if c.isnumeric()]) #list comprehension: same as below
 
@@ -52,14 +48,11 @@ dates = pd.to_datetime(dates) #convert date strings to datetime type
 # # ~~~~~~~   set site locations  ~~~~~~~~~~~~
 path = '/home/meganmason/Documents/projects/thesis/data/processing_lidar/depths_3m/all_rescaled/nc_lidar/'
 
-
-
 pt_x = 4190721.0 #lon
 pt_y = 301751.9 #lat
 
-
-x = []
-y = []
+idx_x = []
+idx_y = []
 
 for filepath in sorted(glob.glob(os.path.join(path, '*.nc'))):
     # print(filepath)
@@ -73,25 +66,43 @@ for filepath in sorted(glob.glob(os.path.join(path, '*.nc'))):
     latvals = lat[:]
     lonvals = lon[:]
 
-ix_min = getclosest(lonvals, pt_x)
-iy_min = getclosest(latvals, pt_y)
-
-print(iy_min)
-print(ix_min)
-
-print('idx',iy_min)
-# print('coord', coord)
-
-x = x.append(ix_min)
-y = y.append(iy_min)
-
-print(x)
-print(y)
+    ix_min = getclosest(lonvals, pt_x)
+    iy_min = getclosest(latvals, pt_y)
+    idx_x.append(ix_min)
+    idx_y.append(iy_min)
 
 
-## 2. write location index to files
-#https://www.guru99.com/reading-and-writing-files-in-python.html
-# f=open("foobar.txt","a+") #appends and generates if not there
+
+# table=[dates,idx_x,idx_y]
+
+# print(iy_min)
+# print(ix_min)
+
+# print('idx',iy_min)
+
+# x = x.append(ix_min)
+# y = y.append(iy_min)
+
+# print(x)
+# print(y)
+
+ds = Dataset(filepath)
+
+arr = ds['Band1'][:,:]
+plt.annotate('here',xy=(iy_min, ix_min))
+# plt.annotate('here',xy=(arr[ix_min], arr[iy_min]))
+plt.imshow(arr)
+#
+# plt.annotate('25, 50', xy=(25, 40), xycoords='data',
+#              xytext=(0.5, 0.5), textcoords='figure fraction',
+#              arrowprops=dict(arrowstyle="->"))
+plt.show()
+# plt.savefig('foo')
+
+
+# 2. write location index to files
+# https://www.guru99.com/reading-and-writing-files-in-python.html
+# f=open("coords.txt","a+") #appends and generates if not there
 # f=open("pixel_x_and_y.txt","w+") #writes file
 # foo = "%d %d\n" % (ix_min, iy_min)
 # print(foo)
